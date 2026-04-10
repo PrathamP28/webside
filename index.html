@@ -1,31 +1,861 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>My Docs</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyProject Docs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0b;
+      --bg-2: #111113;
+      --bg-3: #18181b;
+      --border: #27272a;
+      --border-subtle: #1f1f22;
+      --text: #fafafa;
+      --text-2: #a1a1aa;
+      --text-3: #71717a;
+      --accent: #e4e4e7;
+      --brand: #ffffff;
+      --brand-dim: rgba(255,255,255,0.07);
+      --brand-glow: rgba(255,255,255,0.03);
+      --sidebar-w: 260px;
+      --toc-w: 220px;
+      --nav-h: 56px;
+      --radius: 8px;
+      --code-bg: #141416;
+      --tag-bg: rgba(255,255,255,0.06);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 15px;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    /* ── Topnav ── */
+    .topnav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: var(--nav-h);
+      background: rgba(10,10,11,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex; align-items: center; padding: 0 20px;
+      gap: 0;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 600; font-size: 15px; color: var(--text);
+      text-decoration: none; margin-right: 28px; flex-shrink: 0;
+    }
+    .nav-logo {
+      width: 26px; height: 26px; border-radius: 6px;
+      background: linear-gradient(135deg, #fff 0%, #a1a1aa 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #000;
+    }
+    .nav-links { display: flex; align-items: center; gap: 2px; flex: 1; }
+    .nav-links a {
+      padding: 5px 11px; border-radius: 6px;
+      font-size: 13.5px; color: var(--text-2); text-decoration: none;
+      transition: color .15s, background .15s;
+    }
+    .nav-links a:hover { color: var(--text); background: var(--brand-dim); }
+    .nav-links a.active { color: var(--text); }
+    .nav-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .search-box {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg-3); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 6px 12px;
+      cursor: pointer; transition: border-color .15s;
+      min-width: 200px;
+    }
+    .search-box:hover { border-color: #3f3f46; }
+    .search-box span { font-size: 13px; color: var(--text-3); flex: 1; }
+    .search-box kbd {
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px; color: var(--text-3);
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 4px; padding: 1px 5px;
+    }
+    .icon-btn {
+      width: 34px; height: 34px; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--bg-3);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-2); transition: all .15s;
+    }
+    .icon-btn:hover { color: var(--text); border-color: #3f3f46; }
+    .version-badge {
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px; background: var(--tag-bg);
+      border: 1px solid var(--border); border-radius: 99px;
+      padding: 2px 8px; color: var(--text-2);
+    }
+    .hamburger { display: none; }
+
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: var(--sidebar-w) 1fr var(--toc-w);
+      min-height: 100vh;
+      padding-top: var(--nav-h);
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: sticky; top: var(--nav-h);
+      height: calc(100vh - var(--nav-h));
+      overflow-y: auto; padding: 24px 0 40px;
+      border-right: 1px solid var(--border-subtle);
+    }
+    .sidebar-section { margin-bottom: 4px; }
+    .sidebar-heading {
+      font-size: 11.5px; font-weight: 600; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--text-3);
+      padding: 6px 20px 4px; display: block;
+    }
+    .sidebar-group { list-style: none; }
+    .sidebar-group li a {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 5px 20px; font-size: 13.5px; color: var(--text-2);
+      text-decoration: none; border-radius: 0;
+      transition: color .12s, background .12s;
+      border-left: 2px solid transparent;
+    }
+    .sidebar-group li a:hover { color: var(--text); background: var(--brand-glow); }
+    .sidebar-group li a.active {
+      color: var(--text);
+      background: var(--brand-dim);
+      border-left-color: #fff;
+    }
+    .sidebar-group li a .badge {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; background: var(--tag-bg);
+      border: 1px solid var(--border); border-radius: 4px;
+      padding: 1px 5px; color: var(--text-3);
+    }
+    .sidebar-group li a .new-badge {
+      font-size: 10px; background: rgba(34,197,94,.12);
+      border: 1px solid rgba(34,197,94,.25);
+      border-radius: 4px; padding: 1px 5px; color: #4ade80;
+    }
+    .sidebar-sub { list-style: none; padding-left: 18px; }
+    .sidebar-sub li a {
+      display: block; padding: 4px 20px 4px 12px;
+      font-size: 13px; color: var(--text-3);
+      text-decoration: none; border-left: 1px solid var(--border-subtle);
+      transition: color .12s, border-color .12s;
+    }
+    .sidebar-sub li a:hover { color: var(--text-2); border-left-color: var(--text-3); }
+    .sidebar-divider { height: 1px; background: var(--border-subtle); margin: 12px 20px; }
+
+    /* ── Main Content ── */
+    .main-content {
+      max-width: 760px; margin: 0 auto;
+      padding: 48px 40px 80px;
+    }
+
+    /* breadcrumb */
+    .breadcrumb {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12.5px; color: var(--text-3); margin-bottom: 20px;
+    }
+    .breadcrumb a { color: var(--text-3); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--text-2); }
+    .breadcrumb span { font-size: 11px; }
+
+    /* page header */
+    .page-header { margin-bottom: 36px; }
+    .page-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11.5px; font-weight: 500; letter-spacing: .05em;
+      text-transform: uppercase; color: var(--text-3);
+      background: var(--tag-bg); border: 1px solid var(--border);
+      border-radius: 99px; padding: 3px 10px; margin-bottom: 14px;
+    }
+    .page-tag .dot { width: 5px; height: 5px; border-radius: 50%; background: #4ade80; }
+    h1 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 36px; font-weight: 600; letter-spacing: -.02em;
+      line-height: 1.18; color: var(--text); margin-bottom: 14px;
+    }
+    .page-desc {
+      font-size: 16px; color: var(--text-2); line-height: 1.65;
+      max-width: 580px;
+    }
+
+    /* callout */
+    .callout {
+      display: flex; gap: 12px;
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px 16px;
+      margin: 28px 0; font-size: 14px; color: var(--text-2);
+    }
+    .callout.info { border-left: 3px solid #3b82f6; }
+    .callout.warning { border-left: 3px solid #f59e0b; }
+    .callout.tip { border-left: 3px solid #4ade80; }
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .callout p { margin: 0; }
+    .callout strong { color: var(--text); }
+
+    /* headings */
+    h2 {
+      font-size: 22px; font-weight: 600; letter-spacing: -.01em;
+      color: var(--text); margin: 40px 0 14px;
+      scroll-margin-top: calc(var(--nav-h) + 20px);
+    }
+    h2::before { content: ''; display: block; }
+    h3 {
+      font-size: 17px; font-weight: 600;
+      color: var(--text); margin: 28px 0 10px;
+      scroll-margin-top: calc(var(--nav-h) + 20px);
+    }
+    p { color: var(--text-2); line-height: 1.72; margin-bottom: 16px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text); font-weight: 500; }
+    a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--border); }
+    a:hover { text-decoration-color: var(--text-2); }
+
+    /* code */
+    code {
+      font-family: 'Geist Mono', monospace;
+      font-size: 13px; background: var(--code-bg);
+      border: 1px solid var(--border); border-radius: 4px;
+      padding: 1px 5px; color: #e4e4e7;
+    }
+    pre {
+      background: var(--code-bg); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 0;
+      margin: 20px 0; overflow: hidden;
+    }
+    .pre-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; border-bottom: 1px solid var(--border);
+    }
+    .pre-header .filename {
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; color: var(--text-3);
+    }
+    .copy-btn {
+      font-size: 11px; color: var(--text-3); background: none;
+      border: 1px solid var(--border); border-radius: 4px;
+      padding: 2px 8px; cursor: pointer; transition: all .15s;
+      font-family: inherit;
+    }
+    .copy-btn:hover { color: var(--text-2); border-color: #3f3f46; }
+    pre code {
+      display: block; padding: 18px 20px;
+      border: none; background: none;
+      font-size: 13px; line-height: 1.7;
+      overflow-x: auto; color: var(--text-2);
+    }
+    .token-keyword { color: #c084fc; }
+    .token-string { color: #86efac; }
+    .token-comment { color: #52525b; font-style: italic; }
+    .token-fn { color: #67e8f9; }
+    .token-var { color: #fde68a; }
+    .token-num { color: #fb923c; }
+
+    /* step cards */
+    .steps { margin: 24px 0; counter-reset: steps; }
+    .step {
+      display: flex; gap: 16px; margin-bottom: 28px;
+      padding-bottom: 28px; border-bottom: 1px solid var(--border-subtle);
+    }
+    .step:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .step-num {
+      flex-shrink: 0; width: 28px; height: 28px;
+      border: 1px solid var(--border); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: var(--text-2);
+      background: var(--bg-2); margin-top: 2px;
+      counter-increment: steps;
+    }
+    .step-body h3 { margin-top: 0; }
+    .step-body p { font-size: 14px; }
+
+    /* card grid */
+    .card-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px; margin: 24px 0;
+    }
+    .card {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px 20px;
+      text-decoration: none; color: inherit;
+      transition: border-color .15s, background .15s;
+      display: block;
+    }
+    .card:hover { border-color: #3f3f46; background: var(--bg-3); text-decoration: none; }
+    .card-icon { font-size: 20px; margin-bottom: 10px; }
+    .card h4 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+    .card p { font-size: 13px; color: var(--text-3); margin: 0; line-height: 1.5; }
+    .card-arrow { float: right; color: var(--text-3); font-size: 14px; }
+
+    /* table */
+    .table-wrap { overflow-x: auto; margin: 20px 0; }
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    th {
+      text-align: left; padding: 9px 14px;
+      font-size: 12px; font-weight: 600; letter-spacing: .04em;
+      text-transform: uppercase; color: var(--text-3);
+      border-bottom: 1px solid var(--border); background: var(--bg-2);
+    }
+    td {
+      padding: 10px 14px; border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-2);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--brand-glow); }
+
+    /* divider */
+    hr { border: none; border-top: 1px solid var(--border-subtle); margin: 36px 0; }
+
+    /* prev/next nav */
+    .page-nav {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px; margin-top: 48px;
+    }
+    .page-nav a {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px 20px;
+      text-decoration: none; color: inherit;
+      transition: border-color .15s, background .15s;
+    }
+    .page-nav a:hover { border-color: #3f3f46; background: var(--bg-3); }
+    .page-nav .nav-dir { font-size: 11.5px; color: var(--text-3); margin-bottom: 4px; }
+    .page-nav .nav-title { font-size: 14px; font-weight: 500; color: var(--text); }
+    .page-nav .next { text-align: right; }
+    .page-nav .prev-arrow { margin-right: 4px; }
+    .page-nav .next-arrow { margin-left: 4px; }
+
+    /* ── TOC ── */
+    .toc {
+      position: sticky; top: var(--nav-h);
+      height: calc(100vh - var(--nav-h));
+      overflow-y: auto; padding: 32px 20px 40px 24px;
+      border-left: 1px solid var(--border-subtle);
+    }
+    .toc-heading {
+      font-size: 11.5px; font-weight: 600; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--text-3); margin-bottom: 12px;
+    }
+    .toc-list { list-style: none; }
+    .toc-list li { margin-bottom: 2px; }
+    .toc-list li a {
+      font-size: 13px; color: var(--text-3); text-decoration: none;
+      display: block; padding: 3px 0;
+      border-left: 2px solid transparent; padding-left: 10px;
+      transition: color .12s, border-color .12s;
+    }
+    .toc-list li a:hover { color: var(--text-2); border-left-color: var(--border); }
+    .toc-list li a.active { color: var(--text); border-left-color: #fff; }
+    .toc-list li.sub a { padding-left: 20px; font-size: 12.5px; }
+
+    /* ── Search Modal ── */
+    .search-modal {
+      display: none; position: fixed; inset: 0; z-index: 999;
+      background: rgba(0,0,0,.6); backdrop-filter: blur(4px);
+      align-items: flex-start; justify-content: center;
+      padding-top: 120px;
+    }
+    .search-modal.open { display: flex; }
+    .search-panel {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 12px; width: 100%; max-width: 560px;
+      overflow: hidden; animation: slideDown .15s ease;
+    }
+    @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
+    .search-input-wrap {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 18px; border-bottom: 1px solid var(--border);
+    }
+    .search-input-wrap svg { color: var(--text-3); flex-shrink: 0; }
+    .search-input-wrap input {
+      flex: 1; background: none; border: none; outline: none;
+      font-size: 15px; color: var(--text); font-family: inherit;
+    }
+    .search-input-wrap input::placeholder { color: var(--text-3); }
+    .search-results { padding: 8px; max-height: 380px; overflow-y: auto; }
+    .search-result-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: 6px; cursor: pointer;
+      transition: background .1s; text-decoration: none; color: inherit;
+    }
+    .search-result-item:hover { background: var(--brand-dim); }
+    .result-icon { font-size: 14px; color: var(--text-3); }
+    .result-info { flex: 1; }
+    .result-title { font-size: 14px; color: var(--text); margin-bottom: 2px; }
+    .result-path { font-size: 12px; color: var(--text-3); }
+    .search-footer {
+      padding: 10px 14px; border-top: 1px solid var(--border);
+      display: flex; gap: 16px; font-size: 11.5px; color: var(--text-3);
+    }
+    .search-footer kbd {
+      font-family: 'Geist Mono', monospace;
+      background: var(--bg-3); border: 1px solid var(--border);
+      border-radius: 3px; padding: 1px 5px; font-size: 10px; margin-right: 4px;
+    }
+
+    /* ── Mobile sidebar overlay ── */
+    .sidebar-overlay {
+      display: none; position: fixed; inset: 0; z-index: 90;
+      background: rgba(0,0,0,.6); backdrop-filter: blur(2px);
+    }
+    .sidebar-overlay.open { display: block; }
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: var(--sidebar-w) 1fr; }
+      .toc { display: none; }
+    }
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed; left: -var(--sidebar-w); top: var(--nav-h);
+        height: calc(100vh - var(--nav-h));
+        width: var(--sidebar-w); z-index: 95;
+        background: var(--bg); transform: translateX(-100%);
+        transition: transform .25s ease;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .hamburger { display: flex; }
+      .main-content { padding: 32px 20px 60px; }
+      h1 { font-size: 28px; }
+      .card-grid { grid-template-columns: 1fr; }
+      .page-nav { grid-template-columns: 1fr; }
+      .search-box { min-width: unset; }
+      .search-box span { display: none; }
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
-  
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <h2>My Docs</h2>
-    <ul>
-      <li onclick="loadPage('pages/getting-started.html')">Getting Started</li>
-      <li onclick="loadPage('pages/api.html')">API</li>
-    </ul>
-  </aside>
+<!-- ── Topnav ── -->
+<nav class="topnav">
+  <a href="#" class="nav-brand">
+    <div class="nav-logo">M</div>
+    MyProject
+  </a>
+  <div class="nav-links">
+    <a href="#" class="active">Docs</a>
+    <a href="#">API</a>
+    <a href="#">Blog</a>
+    <a href="#">Changelog</a>
+  </div>
+  <div class="nav-right">
+    <div class="search-box" id="searchTrigger">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <span>Search docs...</span>
+      <kbd>⌘K</kbd>
+    </div>
+    <span class="version-badge">v2.4.1</span>
+    <div class="icon-btn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+    </div>
+    <div class="icon-btn hamburger" id="menuBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </div>
+  </div>
+</nav>
 
-  <!-- Content -->
-  <main class="content" id="content">
-    <h1>Welcome</h1>
-    <p>Select a topic from sidebar</p>
-  </main>
-
+<!-- ── Search Modal ── -->
+<div class="search-modal" id="searchModal">
+  <div class="search-panel">
+    <div class="search-input-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search documentation..." id="searchInput" />
+    </div>
+    <div class="search-results">
+      <a class="search-result-item" href="#">
+        <span class="result-icon">📄</span>
+        <div class="result-info">
+          <div class="result-title">Installation</div>
+          <div class="result-path">Getting Started → Installation</div>
+        </div>
+      </a>
+      <a class="search-result-item" href="#">
+        <span class="result-icon">📄</span>
+        <div class="result-info">
+          <div class="result-title">Configuration Options</div>
+          <div class="result-path">API Reference → Configuration</div>
+        </div>
+      </a>
+      <a class="search-result-item" href="#">
+        <span class="result-icon">📄</span>
+        <div class="result-info">
+          <div class="result-title">Authentication Guide</div>
+          <div class="result-path">Guides → Authentication</div>
+        </div>
+      </a>
+      <a class="search-result-item" href="#">
+        <span class="result-icon">📄</span>
+        <div class="result-info">
+          <div class="result-title">Deploying to Production</div>
+          <div class="result-path">Guides → Deployment</div>
+        </div>
+      </a>
+    </div>
+    <div class="search-footer">
+      <span><kbd>↑↓</kbd> Navigate</span>
+      <span><kbd>↵</kbd> Open</span>
+      <span><kbd>Esc</kbd> Close</span>
+    </div>
+  </div>
 </div>
 
-<script src="script.js"></script>
+<!-- ── Sidebar Overlay (mobile) ── -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ── Main Layout ── -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-section">
+      <span class="sidebar-heading">Getting Started</span>
+      <ul class="sidebar-group">
+        <li><a href="#" class="active">Introduction</a></li>
+        <li><a href="#">Installation</a></li>
+        <li><a href="#">Project Structure</a></li>
+        <li><a href="#">Configuration</a></li>
+        <li><a href="#">CLI Reference</a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <span class="sidebar-heading">Core Concepts</span>
+      <ul class="sidebar-group">
+        <li><a href="#">Routing</a></li>
+        <li><a href="#">Data Fetching</a></li>
+        <li>
+          <a href="#">Authentication</a>
+          <ul class="sidebar-sub">
+            <li><a href="#">Sessions</a></li>
+            <li><a href="#">OAuth</a></li>
+            <li><a href="#">JWT Tokens</a></li>
+          </ul>
+        </li>
+        <li><a href="#">State Management</a></li>
+        <li><a href="#">Error Handling</a></li>
+        <li><a href="#">Caching <span class="badge">New</span></a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <span class="sidebar-heading">Guides</span>
+      <ul class="sidebar-group">
+        <li><a href="#">Environment Variables</a></li>
+        <li><a href="#">Testing</a></li>
+        <li><a href="#">Performance</a></li>
+        <li><a href="#">Internationalization</a></li>
+        <li><a href="#">Deployment <span class="new-badge">Updated</span></a></li>
+        <li><a href="#">Migrating from v1</a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <span class="sidebar-heading">API Reference</span>
+      <ul class="sidebar-group">
+        <li><a href="#">Functions</a></li>
+        <li><a href="#">Hooks</a></li>
+        <li><a href="#">Components</a></li>
+        <li><a href="#">Configuration</a></li>
+        <li><a href="#">CLI</a></li>
+      </ul>
+    </div>
+
+  </aside>
+
+  <!-- Main Content -->
+  <main>
+    <div class="main-content">
+      <div class="breadcrumb">
+        <a href="#">Docs</a>
+        <span>›</span>
+        <a href="#">Getting Started</a>
+        <span>›</span>
+        Introduction
+      </div>
+
+      <div class="page-header">
+        <div class="page-tag"><span class="dot"></span> v2.4.1 · Latest</div>
+        <h1>Introduction</h1>
+        <p class="page-desc">
+          Welcome to MyProject — a fast, flexible framework for building modern web applications.
+          This guide walks you through everything you need to get started.
+        </p>
+      </div>
+
+      <div class="callout info">
+        <span class="callout-icon">ℹ️</span>
+        <p><strong>New in v2.4</strong> — We've revamped the caching system and added first-class support for streaming. <a href="#">See what's new →</a></p>
+      </div>
+
+      <!-- Quick Start -->
+      <h2 id="quick-start">Quick Start</h2>
+      <p>The fastest way to create a new MyProject app is using the CLI. Run the following command and follow the prompts:</p>
+
+      <pre>
+        <div class="pre-header">
+          <span class="filename">Terminal</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <code>npx create-myproject@latest my-app
+cd my-app
+npm run dev</code>
+      </pre>
+
+      <p>Your app will be available at <code>http://localhost:3000</code>. Open the project in your editor and start building.</p>
+
+      <div class="callout tip">
+        <span class="callout-icon">💡</span>
+        <p><strong>Tip:</strong> Use the <code>--template</code> flag to start from a pre-built template. Run <code>npx create-myproject --help</code> to see all options.</p>
+      </div>
+
+      <!-- Installation -->
+      <h2 id="installation">Manual Installation</h2>
+      <p>Prefer to set things up yourself? Follow these steps to install MyProject manually in an existing project.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h3>Install dependencies</h3>
+            <p>Add MyProject and its peer dependencies to your project.</p>
+            <pre>
+              <div class="pre-header">
+                <span class="filename">Terminal</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <code>npm install myproject react react-dom</code>
+            </pre>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h3>Create a config file</h3>
+            <p>Add a <code>myproject.config.js</code> file at the root of your project.</p>
+            <pre>
+              <div class="pre-header">
+                <span class="filename">myproject.config.js</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <code><span class="token-comment">/** @type {import('myproject').Config} */</span>
+<span class="token-keyword">const</span> <span class="token-var">config</span> = {
+  <span class="token-var">port</span>: <span class="token-num">3000</span>,
+  <span class="token-var">output</span>: <span class="token-string">'standalone'</span>,
+  <span class="token-var">features</span>: {
+    <span class="token-var">streaming</span>: <span class="token-keyword">true</span>,
+    <span class="token-var">caching</span>: <span class="token-string">'auto'</span>,
+  },
+};
+
+<span class="token-keyword">export default</span> <span class="token-var">config</span>;</code>
+            </pre>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h3>Add scripts to package.json</h3>
+            <p>Update your <code>package.json</code> to include the dev and build scripts.</p>
+            <pre>
+              <div class="pre-header">
+                <span class="filename">package.json</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <code>{
+  <span class="token-string">"scripts"</span>: {
+    <span class="token-string">"dev"</span>: <span class="token-string">"myproject dev"</span>,
+    <span class="token-string">"build"</span>: <span class="token-string">"myproject build"</span>,
+    <span class="token-string">"start"</span>: <span class="token-string">"myproject start"</span>
+  }
+}</code>
+            </pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Requirements -->
+      <h2 id="requirements">System Requirements</h2>
+      <p>Before installing MyProject, make sure your environment meets the minimum requirements.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Dependency</th>
+              <th>Minimum Version</th>
+              <th>Recommended</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Node.js</code></td>
+              <td>18.17.0</td>
+              <td>20.x or later</td>
+            </tr>
+            <tr>
+              <td><code>npm</code></td>
+              <td>9.x</td>
+              <td>10.x or later</td>
+            </tr>
+            <tr>
+              <td>OS</td>
+              <td>macOS, Linux, Windows (WSL)</td>
+              <td>—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warning">
+        <span class="callout-icon">⚠️</span>
+        <p><strong>Windows users:</strong> We recommend using <a href="#">Windows Subsystem for Linux (WSL)</a> for the best development experience.</p>
+      </div>
+
+      <!-- Explore -->
+      <h2 id="explore">Explore</h2>
+      <p>Once you have MyProject running, explore the documentation to learn about core features.</p>
+
+      <div class="card-grid">
+        <a class="card" href="#">
+          <div class="card-icon">🗺️</div>
+          <h4>Routing <span class="card-arrow">→</span></h4>
+          <p>Learn how file-based routing works and how to build dynamic routes.</p>
+        </a>
+        <a class="card" href="#">
+          <div class="card-icon">⚡</div>
+          <h4>Data Fetching <span class="card-arrow">→</span></h4>
+          <p>Fetch data server-side, client-side, or with streaming.</p>
+        </a>
+        <a class="card" href="#">
+          <div class="card-icon">🔐</div>
+          <h4>Authentication <span class="card-arrow">→</span></h4>
+          <p>Add session-based or token-based auth to your app.</p>
+        </a>
+        <a class="card" href="#">
+          <div class="card-icon">🚀</div>
+          <h4>Deployment <span class="card-arrow">→</span></h4>
+          <p>Deploy to Vercel, Docker, or any Node.js host.</p>
+        </a>
+      </div>
+
+      <hr />
+
+      <!-- Page Nav -->
+      <div class="page-nav">
+        <a href="#" class="prev">
+          <div class="nav-dir"><span class="prev-arrow">←</span> Previous</div>
+          <div class="nav-title">Changelog</div>
+        </a>
+        <a href="#" class="next">
+          <div class="nav-dir">Next <span class="next-arrow">→</span></div>
+          <div class="nav-title">Installation</div>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- TOC -->
+  <aside class="toc">
+    <div class="toc-heading">On this page</div>
+    <ul class="toc-list">
+      <li><a href="#quick-start" class="active">Quick Start</a></li>
+      <li><a href="#installation">Manual Installation</a></li>
+      <li class="sub"><a href="#installation">Dependencies</a></li>
+      <li class="sub"><a href="#installation">Config file</a></li>
+      <li class="sub"><a href="#installation">Scripts</a></li>
+      <li><a href="#requirements">System Requirements</a></li>
+      <li><a href="#explore">Explore</a></li>
+    </ul>
+  </aside>
+</div>
+
+<script>
+  // ── Search modal ──
+  const searchTrigger = document.getElementById('searchTrigger');
+  const searchModal = document.getElementById('searchModal');
+  const searchInput = document.getElementById('searchInput');
+
+  function openSearch() {
+    searchModal.classList.add('open');
+    setTimeout(() => searchInput.focus(), 50);
+  }
+  function closeSearch() { searchModal.classList.remove('open'); }
+
+  searchTrigger.addEventListener('click', openSearch);
+  searchModal.addEventListener('click', e => { if (e.target === searchModal) closeSearch(); });
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
+    if (e.key === 'Escape') closeSearch();
+  });
+
+  // ── Mobile sidebar ──
+  const menuBtn = document.getElementById('menuBtn');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+
+  menuBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  });
+
+  // ── Copy code ──
+  function copyCode(btn) {
+    const pre = btn.closest('pre');
+    const code = pre.querySelector('code');
+    const text = code.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+
+  // ── Active TOC on scroll ──
+  const tocLinks = document.querySelectorAll('.toc-list a');
+  const sections = document.querySelectorAll('h2[id]');
+
+  function updateActiveToc() {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 80) current = s.id;
+    });
+    tocLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }
+  window.addEventListener('scroll', updateActiveToc, { passive: true });
+  updateActiveToc();
+</script>
 </body>
 </html>
