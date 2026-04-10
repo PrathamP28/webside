@@ -1,12 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>My Website</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>My Docs</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Hello, Heet</h1>
-    <p>Welcome to my first website hosted on GitHub 🚀</p>
+
+<div class="container">
+  
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2>My Docs</h2>
+    <ul>
+      <li onclick="loadPage('pages/getting-started.html')">Getting Started</li>
+      <li onclick="loadPage('pages/api.html')">API</li>
+    </ul>
+  </aside>
+
+  <!-- Content -->
+  <main class="content" id="content">
+    <h1>Welcome</h1>
+    <p>Select a topic from sidebar</p>
+  </main>
+
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
